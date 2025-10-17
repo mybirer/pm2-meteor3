@@ -1,6 +1,6 @@
 {
   "name": "pm2-meteor3",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "bin": "lib/pm2-meteor3.js",
   "description": "Modern deployment tool for Meteor 3.x+ apps with PM2 - Fork of pm2-meteor",
   "main": "lib/pm2-meteor3.js",
