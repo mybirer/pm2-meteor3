@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 M. Yasin Birer
+Copyright (c) 2025 pm2-meteor3 contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Original pm2-meteor project:
+Copyright (c) andruschka <fritz.andrej@me.com> (http://github.com/andruschka)
+Licensed under MIT License
+Source: https://github.com/andruschka/pm2-meteor

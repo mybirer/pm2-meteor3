@@ -1,0 +1,44 @@
+{
+  "name": "pm2-meteor3",
+  "version": "1.0.0",
+  "bin": "lib/pm2-meteor3.js",
+  "description": "Modern deployment tool for Meteor 3.x+ apps with PM2 - Fork of pm2-meteor",
+  "main": "lib/pm2-meteor3.js",
+  "scripts": {
+    "prepare": "echo Build completed - using JavaScript files directly",
+    "build": "echo Build completed - using JavaScript files directly"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mybirer/pm2-meteor3.git"
+  },
+  "keywords": [
+    "pm2",
+    "meteor",
+    "meteor3",
+    "meteor-3",
+    "config",
+    "deploy",
+    "deployment",
+    "nodejs",
+    "nvm",
+    "ssh",
+    "modern"
+  ],
+  "author": "Mybirer <mybirer@gmail.com> (https://github.com/mybirer)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mybirer/pm2-meteor3/issues"
+  },
+  "homepage": "https://github.com/mybirer/pm2-meteor3",
+  "dependencies": {
+    "abs": "^1.0.0",
+    "async": "^1.4.2",
+    "cli": "^0.11.0",
+    "commander": "^2.9.0",
+    "inquirer": "^3.0.6",
+    "node-ssh": "^13.1.0"
+  },
+  "devDependencies": {
+  }
+}
