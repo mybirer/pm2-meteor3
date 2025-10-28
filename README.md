@@ -263,8 +263,7 @@ Deploy a local app and run app in fork-mode with several instances (for managing
     "pem": "~/.ssh/id_rsa",
     "deploymentDir": "/home/nodejs/",
     "exec_mode": "fork_mode",
-    "instances": 3,
-    "freePorts": [3002, 3003] // ... further fork_mode instances will use this ports
+    "instances": 3
   }
 }
 
