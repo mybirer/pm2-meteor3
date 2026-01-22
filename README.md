@@ -1,8 +1,9 @@
 # pm2-meteor3
 
-> **Modern fork of [pm2-meteor](https://github.com/andruschka/pm2-meteor)** - Updated for Meteor 3.x+ and Node.js 14+
+> **Modern fork of [pm2-meteor](https://github.com/andruschka/pm2-meteor)** - Deploy Node.js apps with PM2
 
 This is a maintained fork of the original pm2-meteor project with the following improvements:
+- ✅ **Multi-project support** - Deploy Express, Next.js, and Meteor apps
 - ✅ **Meteor 3.x compatibility** - Works with latest Meteor versions
 - ✅ **Modern Node.js SSH client** - Uses node-ssh instead of deprecated nodemiral
 - ✅ **Removed CoffeeScript dependency** - Pure JavaScript implementation
@@ -18,16 +19,24 @@ This is a maintained fork of the original pm2-meteor project with the following 
 </div>
   
 
-**pm2-meteor3** is a CLI tool, that will deploy your Meteor app (from your dev machine or from git) as Nodejs bundle and run it with PM2. (tested with Ubuntu and Freebsd hosts)
+**pm2-meteor3** is a CLI tool that deploys your **Express**, **Next.js**, or **Meteor** apps to any server and runs them with PM2. No Docker, no complex CI/CD setup - just one command to deploy from your local machine.
+
+## Supported Project Types
+
+| Type | Build Process | Entry Point |
+|------|--------------|-------------|
+| **Express** | `npm install --production` | Your entry file (e.g., `src/index.js`) |
+| **Next.js** | `npm install` + `npm run build` | `next start` |
+| **Meteor** | `meteor build` | `bundle/main.js` |
 
 ## Features
-1. you can deploy from a git repo  
-2. you can deploy to almost every server construction (also freebsd jails)  
-3. it uses PM2 to run your Meteor Apps  
-4. reads your Meteor settings file from a path for you    
-5. you can configure the directory where your apps will be deployed  
-6. you can scale your App in realtime with one command  
-7. make generic pm2-meteor3 settings with a `pm-meteor.js` file which module.exports settings  
+1. **Deploy Express, Next.js, and Meteor apps** with the same tool
+2. Deploy from local directory or git repo  
+3. Deploy to almost any server (Ubuntu, Debian, FreeBSD, etc.)  
+4. Uses PM2 for process management with load balancing
+5. Zero-downtime deployments with automatic backup
+6. Scale your app in realtime with one command  
+7. Revert to previous version if something goes wrong  
 
 ### Why PM2?
 PM2 is a process manager, that will run/restart Nodejs apps, just like forever - but:
@@ -43,89 +52,145 @@ $ npm i -g pm2-meteor3
 You should have Nodejs, npm and PM2 installed on your host machine.  
 pm2-meteor3 won't install global tools on your server.
 
-## Usage
-### 1. Init a pm2-meteor3.json config file
+## Quick Start
+
+### Express API Example
+```bash
+cd my-express-api
+pm2-meteor3 init        # Select "express" when asked
+pm2-meteor3 deploy      # Build, upload, and start with PM2
 ```
-$ mkdir ninjaApp_deployment
-$ cd ninjaApp_deployment
+
+### Next.js App Example
+```bash
+cd my-nextjs-app
+pm2-meteor3 init        # Select "nextjs" when asked
+pm2-meteor3 deploy      # Build, upload, and start with PM2
+```
+
+### Meteor App Example
+```bash
+cd my-meteor-app
+pm2-meteor3 init        # Select "meteor" when asked
+pm2-meteor3 deploy      # Build, upload, and start with PM2
+```
+
+---
+
+## Usage
+
+### 1. Init a pm2-meteor3.json config file
+```bash
+$ cd your-app
 $ pm2-meteor3 init
 ```
-(The pm2-meteor3 wizzard will ask you some questions and prefill the configuration file.)
+The wizard will ask you:
+1. **App name** - Name for PM2 process
+2. **Project type** - express, nextjs, or meteor
+3. **App location** - Local path or git URL
+4. **Server details** - Host, username, auth method
+5. **Other options** - Port, instances, etc.
 
-### 2. Complete the generated pm2-meteor3.json file
-```
+### 2. Review the generated pm2-meteor3.json file
+
+#### Express Config Example
+```json
 {
-  // the name of your app
-  "appName": "ninjaApp",
-
-  // where your app is located
+  "appName": "my-api",
+  "appType": "express",
   "appLocation": {
-    "local": "~/Workspace/ninjaApp"
-  // or you can also deploy with git ;-)
-  // (use username:password@github.com/... for authentication)
-  //   "git": "https://user:password@github.com/andruschka/ninjaApp",
-  //   "branch": "production"
+    "local": "./"
   },
-
-  // where the meteor settings are located
-  "meteorSettingsLocation":"~/Workspace/ninjaApp/settings/production.json",
-  "meteorSettingsInRepo": false,
-  // or RELATIVE to app root, if settings are located in git repo (this is not a good idea...)
-  // "meteorSettingsLocation":"settings/production.json",
-  // "meteorSettingsInRepo": true,
-
-  // build flags for Meteor
-  "meteorBuildFlags": "--architecture os.linux.x86_64"
-
-  // runs as command in the meteor app before building
-  "prebuildScript": "",
-  // say you are still using meteorite and want to install deps before deploying:
-  // "prebuildScript": "mrt install",
-
-  // the env vars
-  // (METEOR_SETTINGS will be generated from your meteor-settings file)
+  "entryPoint": "src/index.js",
   "env": {
-    "ROOT_URL": "http://ninja.my-host.com",
-    "PORT": 4004,
-    // optional - set some additional free ports if you want to use fork_mode with several instances
-    // (you need handle loadbalancing yourself!)
-    // "FORK_PORTS": [4005, 4006]
-    "MONGO_URL": "mongodb://localhost:27017/ninjaApp"
+    "NODE_ENV": "production",
+    "PORT": 3000
   },
-
-  // infos for deployment
   "server": {
-    "host": "my-host.com",
-    "username": "nodejs",
-    "password": "trustno1",
-    // or auth with pem file
-    // "pem":"~/.ssh/id_rsa",
-    // optional - set port
-    // "port": "22",
-
-    // optional - object whose key and value will be passed as -o key:value to any ssh session
-    // "ssh": {} 
-
-    // this dir will contain your apps
-    // (app will be deployed to /opt/pm2-meteor3/ninjaApp)
-    "deploymentDir": "/opt/pm2-meteor3",
-
-    // optional - will source a profile before executing tasks on the server
-    // "loadProfile": "",
-
-    // exec mode for pm2
+    "host": "my-server.com",
+    "username": "deploy",
+    "pem": "~/.ssh/id_rsa",
+    "deploymentDir": "/opt/apps",
     "exec_mode": "cluster_mode",
-    "instances": 2,
-
-    // you can also set another interpreter (e.g. use another node version / nvm - see pm2 docs)
-    "interpreter": ""
-  },
-  // optional - set this one if you want to undeploy your app
-  // "allowUndeploy": true
-
-  // optional - set this if you want to specify timestamps to the pm2 log-files
-  // "log_date_format": "YYYY-MM-DD HH:mm Z"
+    "instances": 2
+  }
 }
+```
+
+#### Next.js Config Example
+```json
+{
+  "appName": "my-frontend",
+  "appType": "nextjs",
+  "appLocation": {
+    "local": "./"
+  },
+  "nextBuildCommand": "npm run build",
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": 3000
+  },
+  "server": {
+    "host": "my-server.com",
+    "username": "deploy",
+    "pem": "~/.ssh/id_rsa",
+    "deploymentDir": "/opt/apps",
+    "exec_mode": "cluster_mode",
+    "instances": 2
+  }
+}
+```
+
+#### Meteor Config Example
+```json
+{
+  "appName": "my-meteor-app",
+  "appType": "meteor",
+  "appLocation": {
+    "local": "./"
+  },
+  "meteorSettingsLocation": "./settings/production.json",
+  "meteorBuildFlags": "--architecture os.linux.x86_64",
+  "env": {
+    "ROOT_URL": "https://my-app.com",
+    "PORT": 3000,
+    "MONGO_URL": "mongodb://localhost:27017/myapp"
+  },
+  "server": {
+    "host": "my-server.com",
+    "username": "deploy",
+    "pem": "~/.ssh/id_rsa",
+    "deploymentDir": "/opt/apps",
+    "exec_mode": "cluster_mode",
+    "instances": 2
+  }
+}
+```
+
+### Config Options Reference
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `appName` | string | Name of your app (used by PM2) |
+| `appType` | string | `express`, `nextjs`, or `meteor` |
+| `appLocation.local` | string | Local path to your app |
+| `appLocation.git` | string | Git URL (alternative to local) |
+| `appLocation.branch` | string | Git branch (default: master) |
+| `entryPoint` | string | Entry file for Express (default: `src/index.js`) |
+| `nextBuildCommand` | string | Build command for Next.js (default: `npm run build`) |
+| `meteorSettingsLocation` | string | Path to Meteor settings.json |
+| `meteorBuildFlags` | string | Meteor build flags |
+| `prebuildScript` | string | Script to run before build |
+| `env` | object | Environment variables |
+| `server.host` | string | Server hostname or IP |
+| `server.username` | string | SSH username |
+| `server.password` | string | SSH password (or use pem) |
+| `server.pem` | string | Path to SSH private key |
+| `server.port` | number | SSH port (default: 22) |
+| `server.deploymentDir` | string | Where to deploy on server |
+| `server.exec_mode` | string | `cluster_mode` or `fork_mode` |
+| `server.instances` | number | Number of PM2 instances |
+| `server.interpreter` | string | Custom Node.js path (for nvm) |
 ```
 
 ### 3. Deploy your app
@@ -180,91 +245,205 @@ then transfer it to your machine, unzip it and run
 ```
 $ pm2 start pm2-env.json
 ```
-## Example configs
-Deploy from a private github repo and start 2 load balanced instances:
-```
+## Example Configs
+
+### Express API with MongoDB
+```json
 {
-  "appName": "todos",
+  "appName": "api-server",
+  "appType": "express",
   "appLocation": {
-    "git": "https://andruschka:bestPass123@github.com/andruschka/todos.git",
-    "branch": "master"
+    "local": "./"
   },
-  "meteorSettingsLocation": "settings/production.json",
-  "prebuildScript": "mrt install",
-  "meteorBuildFlags": "--architecture os.linux.x86_64",
+  "entryPoint": "src/index.js",
   "env": {
-    "PORT": 3000,
-    "MONGO_URL": "mongodb://localhost:27017/todos",
-    "ROOT_URL": "http://todos.my-host.co"
+    "NODE_ENV": "production",
+    "PORT": 4000,
+    "MONGODB_URI": "mongodb://localhost:27017/mydb",
+    "JWT_SECRET": "your-secret-key"
   },
   "server": {
-    "host": "my-host.co",
-    "username": "nodejs",
+    "host": "api.example.com",
+    "username": "deploy",
     "pem": "~/.ssh/id_rsa",
-    "deploymentDir": "/home/nodejs/",
+    "deploymentDir": "/opt/apps",
+    "exec_mode": "cluster_mode",
+    "instances": 4
+  }
+}
+```
+
+### Next.js Frontend with Custom Build
+```json
+{
+  "appName": "frontend",
+  "appType": "nextjs",
+  "appLocation": {
+    "local": "./"
+  },
+  "nextBuildCommand": "npm run build",
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": 3000,
+    "NEXT_PUBLIC_API_URL": "https://api.example.com"
+  },
+  "server": {
+    "host": "example.com",
+    "username": "deploy",
+    "pem": "~/.ssh/id_rsa",
+    "deploymentDir": "/opt/apps",
     "exec_mode": "cluster_mode",
     "instances": 2
   }
 }
-
 ```
 
-Deploy a local app and run app in fork-mode:  
-(using a pm2-meteor3.js file and passing the MONGO_URL via bash env var
-e.g.: `MONGO_URL='mongodb://user:pw@host/db' pm2-meteor3 deploy`
-)  
-```
-const appName = "todos"
-const mongoUrl = process.env.MONGO_URL
-
-module.exports = {
-  appName, // <~ just ES6 stuff for  appName: appName
+### Meteor App from Git Repository
+```json
+{
+  "appName": "meteor-app",
+  "appType": "meteor",
   "appLocation": {
-    "local":"~/Workspace/todos"
+    "git": "https://user:token@github.com/user/repo.git",
+    "branch": "production"
   },
-  "meteorSettingsLocation": "~/Workspace/todos/settings/production.json",
-  "prebuildScript": "",
+  "meteorSettingsLocation": "settings/production.json",
+  "meteorSettingsInRepo": true,
   "meteorBuildFlags": "--architecture os.linux.x86_64",
   "env": {
+    "ROOT_URL": "https://app.example.com",
     "PORT": 3000,
-    "MONGO_URL": mongoUrl, // <~
-    "ROOT_URL": "http://todos.my-host.co"
+    "MONGO_URL": "mongodb://localhost:27017/meteor"
   },
   "server": {
-    "host": "my-host.co",
-    "username": "nodejs",
+    "host": "app.example.com",
+    "username": "deploy",
     "pem": "~/.ssh/id_rsa",
-    "deploymentDir": "/home/nodejs/",
+    "deploymentDir": "/opt/apps",
+    "exec_mode": "cluster_mode",
+    "instances": 2
+  }
+}
+```
+
+### Using JavaScript Config (pm2-meteor3.js)
+You can use a `.js` file instead of `.json` for dynamic configuration:
+
+```javascript
+// pm2-meteor3.js
+const appName = "my-api";
+
+module.exports = {
+  appName,
+  appType: "express",
+  appLocation: {
+    local: "./"
+  },
+  entryPoint: "src/index.js",
+  env: {
+    NODE_ENV: "production",
+    PORT: process.env.PORT || 3000,
+    DATABASE_URL: process.env.DATABASE_URL,
+    API_KEY: process.env.API_KEY
+  },
+  server: {
+    host: process.env.DEPLOY_HOST || "example.com",
+    username: "deploy",
+    pem: "~/.ssh/id_rsa",
+    deploymentDir: "/opt/apps",
+    exec_mode: "cluster_mode",
+    instances: 2
+  }
+};
+```
+
+Then deploy with environment variables:
+```bash
+DATABASE_URL='postgres://...' API_KEY='xxx' pm2-meteor3 deploy
+```
+
+### Using nvm on Server
+If you use nvm on your server, set the `loadProfile` and optionally `interpreter`:
+
+```json
+{
+  "appName": "my-app",
+  "appType": "express",
+  "appLocation": { "local": "./" },
+  "entryPoint": "src/index.js",
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": 3000
+  },
+  "server": {
+    "host": "example.com",
+    "username": "deploy",
+    "pem": "~/.ssh/id_rsa",
+    "deploymentDir": "/opt/apps",
+    "loadProfile": "/home/deploy/.nvm/nvm.sh",
+    "interpreter": "/home/deploy/.nvm/versions/node/v20.10.0/bin/node",
     "exec_mode": "fork_mode",
     "instances": 1
   }
 }
-
 ```
 
-Deploy a local app and run app in fork-mode with several instances (for managing load balancing yourself):
-```
-{
-  "appName": "todos",
-  "appLocation": {
-    "local":"~/Workspace/todos"
-  },
-  "meteorSettingsLocation": "~/Workspace/todos/settings/production.json",
-  "prebuildScript": "",
-  "meteorBuildFlags": "--architecture os.linux.x86_64",
-  "env": {
-    "PORT": 3000, // first fork_mode instande willl use this port ...
-    "MONGO_URL": "mongodb://localhost:27017/todos",
-    "ROOT_URL": "http://todos.my-host.co"
-  },
-  "server": {
-    "host": "my-host.co",
-    "username": "nodejs",
-    "pem": "~/.ssh/id_rsa",
-    "deploymentDir": "/home/nodejs/",
-    "exec_mode": "fork_mode",
-    "instances": 3
-  }
-}
+---
 
+## Server Requirements
+
+Your target server needs:
+- **Node.js** (14+ recommended)
+- **npm**
+- **PM2** (`npm install -g pm2`)
+- SSH access (password or key-based)
+
+pm2-meteor3 will NOT install these for you - make sure they're available before deploying.
+
+## How It Works
+
+1. **Build locally** - Your app is built on your machine
+2. **Create tarball** - A `bundle.tar.gz` is created with your source code and config
+3. **Upload via SSH** - The tarball is uploaded to your server
+4. **Install dependencies** - `npm install --production` runs on the server
+5. **Start with PM2** - PM2 starts your app with the configured settings
+
+### Build Process by App Type
+
+| Type | Local Build | Server Install | Entry Point |
+|------|-------------|----------------|-------------|
+| **Express** | Copy source files | `npm install --production --legacy-peer-deps` | Your entry file |
+| **Next.js** | `npm run build` (if node_modules exists, skip npm install) | `npm install --production --legacy-peer-deps` | `next start` |
+| **Meteor** | `meteor build` | `npm install --production` (in programs/server) | `main.js` |
+
+This means:
+- No Docker required on server
+- No Git required on server
+- Native modules are compiled on target server (correct architecture)
+- Small upload size (no node_modules in tarball for Express/Next.js)
+
+### Windows Compatibility
+pm2-meteor3 works on Windows, macOS, and Linux. All file operations use cross-platform Node.js APIs.
+
+## Troubleshooting
+
+### "Missing node/npm/pm2" error
+Make sure Node.js, npm, and PM2 are installed on your server and accessible via SSH.
+
+### Permission denied
+Check your SSH credentials (password or pem file path).
+
+### App not starting
+Check PM2 logs on server:
+```bash
+ssh user@server "pm2 logs your-app-name"
 ```
+
+### Next.js: Module not found
+Make sure your `next.config.js` doesn't use features that require build-time only modules.
+
+---
+
+## License
+
+MIT License - Based on [andruschka/pm2-meteor](https://github.com/andruschka/pm2-meteor)
