@@ -19,7 +19,7 @@ This is a maintained fork of the original pm2-meteor project with the following 
 </div>
   
 
-**pm2-meteor3** is a CLI tool that deploys your **Express**, **Next.js**, or **Meteor** apps to any server and runs them with PM2. No Docker, no complex CI/CD setup - just one command to deploy from your local machine.
+**pm2-meteor3** is a CLI tool that deploys your **Express**, **Next.js**, **Vite/React**, or **Meteor** apps to any server and runs them with PM2. No Docker, no complex CI/CD setup - just one command to deploy from your local machine.
 
 ## Supported Project Types
 
@@ -27,10 +27,11 @@ This is a maintained fork of the original pm2-meteor project with the following 
 |------|--------------|-------------|
 | **Express** | `npm install --production` | Your entry file (e.g., `src/index.js`) |
 | **Next.js** | `npm install` + `npm run build` | `next start` |
+| **Vite/React** | `npm run build` → `dist/` | `serve dist -s -l PORT` |
 | **Meteor** | `meteor build` | `bundle/main.js` |
 
 ## Features
-1. **Deploy Express, Next.js, and Meteor apps** with the same tool
+1. **Deploy Express, Next.js, Vite/React, and Meteor apps** with the same tool
 2. Deploy from local directory or git repo  
 3. Deploy to almost any server (Ubuntu, Debian, FreeBSD, etc.)  
 4. Uses PM2 for process management with load balancing
@@ -68,6 +69,13 @@ pm2-meteor3 init        # Select "nextjs" when asked
 pm2-meteor3 deploy      # Build, upload, and start with PM2
 ```
 
+### Vite/React App Example
+```bash
+cd my-vite-app
+pm2-meteor3 init        # Select "vite" when asked
+pm2-meteor3 deploy      # Build, upload, and start with PM2
+```
+
 ### Meteor App Example
 ```bash
 cd my-meteor-app
@@ -86,7 +94,7 @@ $ pm2-meteor3 init
 ```
 The wizard will ask you:
 1. **App name** - Name for PM2 process
-2. **Project type** - express, nextjs, or meteor
+2. **Project type** - express, nextjs, vite, or meteor
 3. **App location** - Local path or git URL
 4. **Server details** - Host, username, auth method
 5. **Other options** - Port, instances, etc.
@@ -141,6 +149,30 @@ The wizard will ask you:
 }
 ```
 
+#### Vite/React Config Example
+```json
+{
+  "appName": "my-vite-app",
+  "appType": "vite",
+  "appLocation": {
+    "local": "./"
+  },
+  "viteBuildCommand": "npm run build",
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": 3000
+  },
+  "server": {
+    "host": "my-server.com",
+    "username": "deploy",
+    "pem": "~/.ssh/id_rsa",
+    "deploymentDir": "/opt/apps",
+    "exec_mode": "fork_mode",
+    "instances": 1
+  }
+}
+```
+
 #### Meteor Config Example
 ```json
 {
@@ -178,6 +210,7 @@ The wizard will ask you:
 | `appLocation.branch` | string | Git branch (default: master) |
 | `entryPoint` | string | Entry file for Express (default: `src/index.js`) |
 | `nextBuildCommand` | string | Build command for Next.js (default: `npm run build`) |
+| `viteBuildCommand` | string | Build command for Vite (default: `npm run build`) |
 | `meteorSettingsLocation` | string | Path to Meteor settings.json |
 | `meteorBuildFlags` | string | Meteor build flags |
 | `prebuildScript` | string | Script to run before build |
@@ -414,6 +447,7 @@ pm2-meteor3 will NOT install these for you - make sure they're available before 
 |------|-------------|----------------|-------------|
 | **Express** | Copy source files | `npm install --production --legacy-peer-deps` | Your entry file |
 | **Next.js** | `npm run build` (if node_modules exists, skip npm install) | `npm install --production --legacy-peer-deps` | `next start` |
+| **Vite** | `npm run build` → `dist/` (skip npm install if node_modules exists) | `npm install serve` | `serve dist -s -l PORT` |
 | **Meteor** | `meteor build` | `npm install --production` (in programs/server) | `main.js` |
 
 This means:

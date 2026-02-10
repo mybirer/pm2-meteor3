@@ -1,6 +1,6 @@
 {
   "name": "pm2-meteor3",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "bin": "lib/program.js",
   "description": "Deploy Express, Next.js, and Meteor apps with PM2 - Modern fork of pm2-meteor",
   "main": "lib/pm2-meteor3.js",
